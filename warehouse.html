@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Almacen</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" >
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <link rel="icon" href="assets/imgs/favicon.ico" type="image/x-icon">
+    
+    <style>
+        .icon-button {
+            background-color: transparent;
+            border: none;
+            color: blue;
+            font-size: 1.5em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4 d-flex justify-content-center">Almacen</h1>
+        
+        <div class="card">
+            <div class="card-header text-center">
+                <h5 class="card-title">Ordenes</h5>
+            </div>
+            <div class="card-body">
+                <form id="orderForm" class="bg-white p-4 rounded shadow-sm">
+                    <div id="inputContainer">
+                        <div class="row align-items-end mb-3" id="row1">
+                            <div class="col-md-2 mb-3">
+                                <label for="quantity1" class="form-label">Cantidad:</label>
+                                <select id="quantity1" class="form-select" required>
+                                    <script>
+                                        for (let i = 1; i <= 25; i++) {
+                                            document.write(`<option value="${i}">${i}</option>`);
+                                        }
+                                    </script>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="product1" class="form-label">Producto:</label>
+                                <input type="text" id="product1" class="form-control" required oninput="this.value = this.value.toUpperCase()">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="status1" class="form-label">Estado:</label>
+                                <select name="status1" id="status1" class="form-control" required>
+                                    <option value="SIN STOCK">SIN STOCK</option>
+                                    <option value="PENDIENTE">PENDIENTE</option>
+                                    <option value="ENTREGADO">ENTREGADO</option>
+                                </select>
+                            </div>
+                            <div class="col-md-1 mb-3 d-flex align-items-end">
+                                <button class="icon-button add-row-button">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <input type="submit" class="btn btn-primary" id="enviarSocket" value="Enviar Orden"></input>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="assets/js/warehouse.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const addButton = document.querySelector('.add-row-button');
+            addButton.addEventListener('click', function() {
+                const inputContainer = document.getElementById('inputContainer');
+                
+                // Generar un nuevo ID para la fila
+                const rowId = Date.now(); // Usamos el timestamp para asegurar IDs únicos
+                
+                const newRow = document.createElement('div');
+                newRow.className = 'row align-items-end mb-3';
+                newRow.id = `row-${rowId}`; // Establecer ID único para la fila
+
+                newRow.innerHTML = `
+                    <div class="col-md-2 mb-3">
+                        <label for="quantity-${rowId}" class="form-label">Cantidad:</label>
+                        <select id="quantity-${rowId}" class="form-select" required>
+                            ${Array.from({length: 25}, (_, i) => `<option value="${i+1}">${i+1}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="product-${rowId}" class="form-label">Producto:</label>
+                        <input type="text" id="product-${rowId}" class="form-control" required oninput="this.value = this.value.toUpperCase()">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="status-${rowId}" class="form-label">Estado:</label>
+                        <select name="status-${rowId}" id="status-${rowId}" class="form-control" required>
+                                    <option value="SIN STOCK">SIN STOCK</option>
+                                    <option value="PENDIENTE">PENDIENTE</option>
+                                    <option value="ENTREGADO">ENTREGADO</option>
+                                </select>
+                    </div>
+                    <div class="col-md-1 mb-3 d-flex align-items-end">
+                        <button type="button" class="icon-button remove-row-button" data-row-id="${rowId}">
+                            <i class="fa-solid fa-window-minimize"></i>
+                        </button>
+                    </div>
+                `;
+
+                inputContainer.appendChild(newRow);
+            });
+
+            // Delegar el evento de clic para eliminar filas
+            document.getElementById('inputContainer').addEventListener('click', function(e) {
+                if (e.target && e.target.classList.contains('remove-row-button')) {
+                    // Asegúrate de obtener el botón real si `e.target` es un hijo
+                    const button = e.target.closest('.remove-row-button');
+                    if (button) {
+                        const rowId = button.getAttribute('data-row-id');
+                        const row = document.getElementById(`row-${rowId}`);
+                        if (row) {
+                            row.remove();
+                        }
+                    }
+                }
+            });
+
+            document.getElementById('orderForm').addEventListener('submit', (event) => {
+                event.preventDefault(); // Prevenir el envío por defecto
+
+                if (validateForm()) {
+                    sendOrders().then(() => {
+                        // Si las órdenes se envían correctamente, recargar la página
+                        setTimeout(() => {
+                            location.reload(); // Recarga la página
+                        }, 2000); // Un pequeño retraso para permitir que el formulario se procese
+                    });
+                } else {
+                    // Si la validación falla, evita el envío del formulario
+                    event.preventDefault();
+                }
+            });
+        });
+
+    </script>
+</body>
+</html>
