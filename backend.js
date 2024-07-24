@@ -15,11 +15,13 @@ mongoose.connect('mongodb://localhost:27017/fertilizer_factory', {
   useUnifiedTopology: true,
 });
 
-// Define Order schema
+// Define updated Order schema
 const orderSchema = new mongoose.Schema({
-  quantity: Number,
-  product: String,
-  status: String,
+  fecha: Date,
+  numeroPedido: String,
+  producto: String,
+  presentacion: String,
+  cantidad: Number,
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -38,7 +40,14 @@ wss.on('connection', (ws) => {
       const orderData = JSON.parse(message);
 
       // Validate orderData here if necessary
-      const newOrder = new Order(orderData);
+      const newOrder = new Order({
+        fecha: new Date(orderData.fecha),
+        numeroPedido: orderData.numeroPedido,
+        producto: orderData.producto,
+        presentacion: orderData.presentacion,
+        cantidad: orderData.cantidad
+      });
+      
       await newOrder.save();
       console.log('Order saved to database');
 
@@ -67,7 +76,7 @@ wss.on('connection', (ws) => {
 // API routes
 app.get('/api/orders', async (req, res) => {
   try {
-    const orders = await Order.find().sort({ createdAt: -1 });
+    const orders = await Order.find().sort({ fecha: -1 });
     res.json(orders);
   } catch (error) {
     console.error('Error fetching orders:', error);

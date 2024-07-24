@@ -31,26 +31,24 @@
                     <div id="inputContainer">
                         <div class="row align-items-end mb-3" id="row1">
                             <div class="col-md-2 mb-3">
-                                <label for="quantity1" class="form-label">Cantidad:</label>
-                                <select id="quantity1" class="form-select" required>
-                                    <script>
-                                        for (let i = 1; i <= 25; i++) {
-                                            document.write(`<option value="${i}">${i}</option>`);
-                                        }
-                                    </script>
-                                </select>
+                                <label for="fecha1" class="form-label">Fecha:</label>
+                                <input type="date" id="fecha1" class="form-control" required>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="product1" class="form-label">Producto:</label>
-                                <input type="text" id="product1" class="form-control" required oninput="this.value = this.value.toUpperCase()">
+                            <div class="col-md-2 mb-3">
+                                <label for="numeroPedido1" class="form-label">Número de Pedido:</label>
+                                <input type="text" id="numeroPedido1" class="form-control" required>
                             </div>
                             <div class="col-md-3 mb-3">
-                                <label for="status1" class="form-label">Estado:</label>
-                                <select name="status1" id="status1" class="form-control" required>
-                                    <option value="SIN STOCK">SIN STOCK</option>
-                                    <option value="PENDIENTE">PENDIENTE</option>
-                                    <option value="ENTREGADO">ENTREGADO</option>
-                                </select>
+                                <label for="producto1" class="form-label">Producto:</label>
+                                <input type="text" id="producto1" class="form-control" required oninput="this.value = this.value.toUpperCase()">
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <label for="presentacion1" class="form-label">Presentación:</label>
+                                <input type="text" id="presentacion1" class="form-control" required>
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <label for="cantidad1" class="form-label">Cantidad:</label>
+                                <input type="number" id="cantidad1" class="form-control" required min="1">
                             </div>
                             <div class="col-md-1 mb-3 d-flex align-items-end">
                                 <button class="icon-button add-row-button">
@@ -60,7 +58,7 @@
                         </div>
                     </div>
                     <div class="d-flex justify-content-end">
-                        <input type="submit" class="btn btn-primary" id="enviarSocket" value="Enviar Orden"></input>
+                        <input type="submit" class="btn btn-primary" id="enviarSocket" value="Enviar Orden">
                     </div>
                 </form>
             </div>
@@ -76,32 +74,32 @@
             const addButton = document.querySelector('.add-row-button');
             addButton.addEventListener('click', function() {
                 const inputContainer = document.getElementById('inputContainer');
-                
-                // Generar un nuevo ID para la fila
-                const rowId = Date.now(); // Usamos el timestamp para asegurar IDs únicos
+                const rowId = Date.now();
                 
                 const newRow = document.createElement('div');
                 newRow.className = 'row align-items-end mb-3';
-                newRow.id = `row-${rowId}`; // Establecer ID único para la fila
+                newRow.id = `row-${rowId}`;
 
                 newRow.innerHTML = `
                     <div class="col-md-2 mb-3">
-                        <label for="quantity-${rowId}" class="form-label">Cantidad:</label>
-                        <select id="quantity-${rowId}" class="form-select" required>
-                            ${Array.from({length: 25}, (_, i) => `<option value="${i+1}">${i+1}</option>`).join('')}
-                        </select>
+                        <label for="fecha-${rowId}" class="form-label">Fecha:</label>
+                        <input type="date" id="fecha-${rowId}" class="form-control" required>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="product-${rowId}" class="form-label">Producto:</label>
-                        <input type="text" id="product-${rowId}" class="form-control" required oninput="this.value = this.value.toUpperCase()">
+                    <div class="col-md-2 mb-3">
+                        <label for="numeroPedido-${rowId}" class="form-label">Número de Pedido:</label>
+                        <input type="text" id="numeroPedido-${rowId}" class="form-control" required>
                     </div>
                     <div class="col-md-3 mb-3">
-                        <label for="status-${rowId}" class="form-label">Estado:</label>
-                        <select name="status-${rowId}" id="status-${rowId}" class="form-control" required>
-                                    <option value="SIN STOCK">SIN STOCK</option>
-                                    <option value="PENDIENTE">PENDIENTE</option>
-                                    <option value="ENTREGADO">ENTREGADO</option>
-                                </select>
+                        <label for="producto-${rowId}" class="form-label">Producto:</label>
+                        <input type="text" id="producto-${rowId}" class="form-control" required oninput="this.value = this.value.toUpperCase()">
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="presentacion-${rowId}" class="form-label">Presentación:</label>
+                        <input type="text" id="presentacion-${rowId}" class="form-control" required>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="cantidad-${rowId}" class="form-label">Cantidad:</label>
+                        <input type="number" id="cantidad-${rowId}" class="form-control" required min="1">
                     </div>
                     <div class="col-md-1 mb-3 d-flex align-items-end">
                         <button type="button" class="icon-button remove-row-button" data-row-id="${rowId}">
@@ -112,6 +110,7 @@
 
                 inputContainer.appendChild(newRow);
             });
+
 
             // Delegar el evento de clic para eliminar filas
             document.getElementById('inputContainer').addEventListener('click', function(e) {

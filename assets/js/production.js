@@ -1,25 +1,30 @@
-//production.js
 const socket = new WebSocket('ws://localhost:8080');
-let orderDisplay;
-let orderHistoryDisplay;
 
 document.addEventListener('DOMContentLoaded', () => {
-    orderDisplay = document.getElementById('orderDisplay');
-    orderHistoryDisplay = document.getElementById('orderHistoryDisplay');
-
     socket.addEventListener('open', (event) => {
         console.log('Connected to WebSocket server');
-        fetchExistingOrders();
-        fetchOrderHistory();
+        fetchOrderHistory(); // This will now fetch and display all orders
     });
 
     socket.addEventListener('message', (event) => {
         console.log('Received message:', event.data);
-
         try {
             const order = JSON.parse(event.data);
-            addOrderToDisplay(order);
             addOrderToHistory(order);
+             // Show alert with SweetAlert2
+             Swal.fire({
+                title: 'Nueva Orden Recibida',
+                text: `Cantidad: ${order.cantidad}, Producto: ${order.producto}, Presentación: ${order.presentacion}`,
+                icon: 'info',
+                confirmButtonText: 'Aceptar'
+            });
+
+            // Play alert sound
+            playAlertSound();
+
+            // Show browser notification
+            showNotification('Nueva Orden', `Cantidad: ${order.cantidad}, Producto: ${order.producto}`);
+
         } catch (error) {
             console.error('Error parsing JSON:', error);
         }
@@ -30,14 +35,58 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-function fetchExistingOrders() {
+function fetchOrderHistory() {
     fetch('http://localhost:3000/api/orders')
         .then(response => response.json())
         .then(orders => {
-            orders.forEach(order => addOrderToDisplay(order));
+            initializeTable();
+            orders.forEach(order => addOrderToHistory(order));
         })
-        .catch(error => console.error('Error fetching orders:', error));
+        .catch(error => console.error('Error fetching order history:', error));
 }
+
+function initializeTable() {
+    if (!historyDataTable) {
+        historyDataTable = $('#ordersHistoryTable').DataTable({
+            language: {
+                url: 'assets/json/Spanish.json'
+            },
+            dom: 'Blfrtip',
+            pageLength: 25,
+            buttons: [
+                {
+                    extend: 'excelHtml5',
+                    text: '<i class="fa fa-file-excel"></i> Excel',
+                    titleAttr: 'Excel',
+                    className: 'buttons-excel'
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: '<i class="fa fa-file-pdf"></i> PDF',
+                    titleAttr: 'PDF',
+                    className: 'buttons-pdf'
+                }
+            ],
+            order: [[0, 'desc']],
+            columns: [
+                { 
+                    title: 'Fecha',
+                    data: 'fecha',
+                    render: function(data) {
+                        return new Date(data).toLocaleString('es-ES');
+                    }
+                },
+                { title: 'Pedido', data: 'numeroPedido' },
+                { title: 'Producto', data: 'producto' },
+                { title: 'Presentación', data: 'presentacion' },
+                { title: 'Cantidad', data: 'cantidad' }
+            ],
+        });
+    }
+}
+
+
+// Keep your existing playAlertSound and showNotification functions
 
 function fetchOrderHistory() {
     fetch('http://localhost:3000/api/orders')
@@ -61,7 +110,6 @@ let historyDataTable = null;
 
 function addOrderToHistory(order) {
     ordersHistory.push(order);
-    
     if (!historyDataTable) {
         let table = document.getElementById('ordersHistoryTable');
         if (!table) {
@@ -71,112 +119,63 @@ function addOrderToHistory(order) {
             table.innerHTML = `
                 <thead class="thead-dark">
                     <tr>
-                        <th>ID de Orden</th>
-                        <th>Cantidad</th>
+                        <th>Fecha</th>
+                        <th>Pedido</th>
                         <th>Producto</th>
-                        <th>Status</th>
-                        <th>Recibido a las</th>
+                        <th>Presentación</th>
+                        <th>Cantidad</th>
                     </tr>
                 </thead>
                 <tbody id="ordersHistoryBody">
                 </tbody>
             `;
-            orderHistoryDisplay.appendChild(table);
+            document.getElementById('orderHistoryDisplay').appendChild(table);
         }
         
+        // Inicializar DataTables
         historyDataTable = $('#ordersHistoryTable').DataTable({
-            order: [[4, 'desc']],
             language: {
                 url: 'assets/json/Spanish.json'
             },
-            dom: 'Blfrtip', // Agregar la configuración de botones
+            dom: 'Blfrtip',
             pageLength: 25,
             buttons: [
                 {
                     extend: 'excelHtml5',
                     text: '<i class="fa fa-file-excel"></i> Excel',
                     titleAttr: 'Excel',
-                    className: 'buttons-excel' // Clase personalizada para el botón de Excel
+                    className: 'buttons-excel'
                 },
                 {
                     extend: 'pdfHtml5',
                     text: '<i class="fa fa-file-pdf"></i> PDF',
                     titleAttr: 'PDF',
-                    className: 'buttons-pdf' // Clase personalizada para el botón de PDF
+                    className: 'buttons-pdf'
                 }
+            ],
+            order: [[0, 'desc']],
+            columns: [
+                { title: 'Fecha' },
+                { title: 'Pedido' },
+                { title: 'Producto' },
+                { title: 'Presentación' },
+                { title: 'Cantidad' }
             ]
         });
-        
-        
     }
+
+    // Formatear fecha con Moment.js antes de agregar a la tabla
+    const formattedDate = moment.utc(order.fecha).format('YYYY-MM-DD');
     
-    const truncatedId = order._id.slice(-10);
     historyDataTable.row.add([
-        truncatedId,
-        order.quantity,
-        order.product,
-        order.status,
-        new Date(order.createdAt).toLocaleString()
-    ]);
-    
-    // No llamamos a draw() aquí, se llamará una vez que se agreguen todas las órdenes
+        formattedDate,
+        order.numeroPedido,
+        order.producto,
+        order.presentacion,
+        order.cantidad
+    ]).draw();
 }
 
-
-
-function addOrderToDisplay(order) {
-    const orderDisplay = document.getElementById('orderDisplay');
-
-    if (!document.getElementById('ordersTable')) {
-        const table = document.createElement('table');
-        table.id = 'ordersTable';
-        table.className = 'table table-striped table-bordered';
-        table.innerHTML = `
-            <thead class="thead-dark">
-                <tr>
-                    <th>Fecha</th>
-                    <th>Cantidad</th>
-                    <th>Producto</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody id="ordersBody">
-            </tbody>
-        `;
-        orderDisplay.appendChild(table);
-        $(document).ready(function() {
-            $('#ordersTable').DataTable({
-                order: [[0, 'desc']],
-                language: {
-                    url: 'assets/json/Spanish.json'
-                },
-                pageLength: 25,
-            });
-        });
-    }
-
-    // Agregar la nueva fila a la tabla
-    const ordersBody = document.getElementById('ordersBody');
-    const row = document.createElement('tr');
-    row.innerHTML = `
-        <td>${new Date(order.createdAt).toLocaleString()}</td>
-        <td>${order.quantity}</td>
-        <td>${order.product}</td>
-        <td>${order.status}</td>
-    `;
-    ordersBody.insertBefore(row, ordersBody.firstChild);
-
-    // Mostrar alerta con SweetAlert2
-    Swal.fire({
-        title: 'Nueva Orden Recibida',
-        text: `Cantidad: ${order.quantity}, Producto: ${order.product}, Estado: ${order.status}`,
-        icon: 'info',
-        confirmButtonText: 'Aceptar'
-    });
-
-    // También puedes conservar el sonido si lo necesitas
-    playAlertSound();
-}
 
 function playAlertSound() {
     const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-alert-bells-echo-765.mp3');

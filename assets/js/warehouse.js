@@ -34,31 +34,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
+// Update the validateForm function
 async function validateForm() {
     const rows = document.querySelectorAll('#inputContainer .row');
     let isValid = true;
 
     for (let row of rows) {
-        const quantity = row.querySelector('select').value;
-        const product = row.querySelector('input[id^="product"]').value;
-        const status = row.querySelector('select[id^="status"]').value;
+        const fecha = row.querySelector('input[type="date"]').value;
+        const numeroPedido = row.querySelector('input[id^="numeroPedido"]').value;
+        const producto = row.querySelector('input[id^="producto"]').value;
+        const presentacion = row.querySelector('input[id^="presentacion"]').value;
+        const cantidad = row.querySelector('input[id^="cantidad"]').value;
 
-        if (!quantity || !product.trim() || !status.trim()) {
+        if (!fecha || !numeroPedido.trim() || !producto.trim() || !presentacion.trim() || !cantidad) {
             isValid = false;
             break;
         }
 
-        if (!/^[a-zA-Z0-9\s\-()]+$/.test(product)) {
-            isValid = false;
-            Swal.fire('Error', 'El nombre del producto debe contener solo letras, números, espacios, guiones y paréntesis', 'error');
-            break;
-        }
-
-        if (!/^[a-zA-Z\s]+$/.test(status)) {
-            isValid = false;
-            Swal.fire('Error', 'El estado debe contener solo letras y espacios', 'error');
-            break;
-        }
+        // Add any additional validation rules here
     }
 
     if (!isValid) {
@@ -69,24 +62,29 @@ async function validateForm() {
 }
 
 // Función para enviar órdenes
+// Update the sendOrders function
 async function sendOrders() {
     const rows = document.querySelectorAll('#inputContainer .row');
     const orders = Array.from(rows).map(row => {
-        const quantity = row.querySelector('select').value;
-        const product = row.querySelector('input[id^="product"]').value;
-        const status = row.querySelector('select[id^="status"]').value;
+        const fecha = row.querySelector('input[type="date"]').value;
+        const numeroPedido = row.querySelector('input[id^="numeroPedido"]').value;
+        const producto = row.querySelector('input[id^="producto"]').value;
+        const presentacion = row.querySelector('input[id^="presentacion"]').value;
+        const cantidad = row.querySelector('input[id^="cantidad"]').value;
 
         return {
-            quantity: parseInt(quantity),
-            product: product,
-            status: status
+            fecha: fecha,
+            numeroPedido: numeroPedido,
+            producto: producto,
+            presentacion: presentacion,
+            cantidad: parseInt(cantidad)
         };
     });
 
     try {
         for (let order of orders) {
             await sendOrder(order);
-            await new Promise(resolve => setTimeout(resolve, 100)); // Retraso de 100ms
+            await new Promise(resolve => setTimeout(resolve, 100));
         }
         Swal.fire({
             title: 'Éxito',
