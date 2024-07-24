@@ -1,7 +1,7 @@
 //warehouse.js
-const socket = new WebSocket('ws://localhost:8080');
-let rowCount = 1; // Contador para filas
-let isSending = false; // Estado para evitar envíos duplicados
+const socket = new WebSocket('ws://192.168.127.132:8080');
+let rowCount = 1; 
+let isSending = false; 
 
 document.addEventListener('DOMContentLoaded', () => {
     const orderForm = document.getElementById('orderForm');
@@ -34,7 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
-// Update the validateForm function
 async function validateForm() {
     const rows = document.querySelectorAll('#inputContainer .row');
     let isValid = true;
@@ -50,8 +49,6 @@ async function validateForm() {
             isValid = false;
             break;
         }
-
-        // Add any additional validation rules here
     }
 
     if (!isValid) {
@@ -61,8 +58,6 @@ async function validateForm() {
     return isValid;
 }
 
-// Función para enviar órdenes
-// Update the sendOrders function
 async function sendOrders() {
     const rows = document.querySelectorAll('#inputContainer .row');
     const orders = Array.from(rows).map(row => {
@@ -105,31 +100,23 @@ async function sendOrders() {
     }
 }
 
-// Función para enviar una sola orden
 function sendOrder(order) {
     return new Promise((resolve, reject) => {
-        // Verifica si el WebSocket está listo para enviar datos
         if (socket.readyState === WebSocket.OPEN) {
             socket.send(JSON.stringify(order));
             console.log('Orden enviada:', order);
             resolve();
         } else {
-            // Maneja el caso en el que el WebSocket no está abierto
             console.error('WebSocket no está abierto. No se puede enviar la orden:', order);
             reject('WebSocket no está abierto');
         }
     });
 }
 
-// Maneja la reconexión automática en caso de que el WebSocket se cierre
 socket.addEventListener('close', () => {
     console.log('WebSocket cerrado. Intentando reconectar...');
-    // Aquí podrías implementar la lógica para volver a intentar la conexión
-    // Por ejemplo, usando un intervalo para intentar reconectar
 });
 
-// Maneja los errores de conexión del WebSocket
 socket.addEventListener('error', (error) => {
     console.error('Error en WebSocket:', error);
-    // Aquí podrías implementar la lógica para manejar los errores de conexión
 });

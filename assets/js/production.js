@@ -1,9 +1,9 @@
-const socket = new WebSocket('ws://localhost:8080');
+const socket = new WebSocket('ws://192.168.127.132:8080');
 
 document.addEventListener('DOMContentLoaded', () => {
     socket.addEventListener('open', (event) => {
         console.log('Connected to WebSocket server');
-        fetchOrderHistory(); // This will now fetch and display all orders
+        fetchOrderHistory(); 
     });
 
     socket.addEventListener('message', (event) => {
@@ -11,18 +11,13 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const order = JSON.parse(event.data);
             addOrderToHistory(order);
-             // Show alert with SweetAlert2
              Swal.fire({
                 title: 'Nueva Orden Recibida',
                 text: `Cantidad: ${order.cantidad}, Producto: ${order.producto}, Presentación: ${order.presentacion}`,
                 icon: 'info',
                 confirmButtonText: 'Aceptar'
             });
-
-            // Play alert sound
             playAlertSound();
-
-            // Show browser notification
             showNotification('Nueva Orden', `Cantidad: ${order.cantidad}, Producto: ${order.producto}`);
 
         } catch (error) {
@@ -36,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function fetchOrderHistory() {
-    fetch('http://localhost:3000/api/orders')
+    fetch('http://192.168.127.132:3000/api/orders')
         .then(response => response.json())
         .then(orders => {
             initializeTable();
@@ -86,13 +81,10 @@ function initializeTable() {
 }
 
 
-// Keep your existing playAlertSound and showNotification functions
-
 function fetchOrderHistory() {
-    fetch('http://localhost:3000/api/orders')
+    fetch('http://192.168.127.132:3000/api/orders')
         .then(response => response.json())
         .then(orders => {
-            // Clear existing history before adding new orders
             ordersHistory = [];
             if (historyDataTable) {
                 historyDataTable.clear();
@@ -132,7 +124,6 @@ function addOrderToHistory(order) {
             document.getElementById('orderHistoryDisplay').appendChild(table);
         }
         
-        // Inicializar DataTables
         historyDataTable = $('#ordersHistoryTable').DataTable({
             language: {
                 url: 'assets/json/Spanish.json'
@@ -164,7 +155,6 @@ function addOrderToHistory(order) {
         });
     }
 
-    // Formatear fecha con Moment.js antes de agregar a la tabla
     const formattedDate = moment.utc(order.fecha).format('YYYY-MM-DD');
     
     historyDataTable.row.add([

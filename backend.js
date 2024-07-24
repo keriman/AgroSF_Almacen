@@ -9,13 +9,11 @@ const port = 3000;
 app.use(cors());
 app.use(express.json());
 
-// Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/fertilizer_factory', {
+mongoose.connect('mongodb://192.168.127.132:27017/fertilizer_factory', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
 
-// Define updated Order schema
 const orderSchema = new mongoose.Schema({
   fecha: Date,
   numeroPedido: String,
@@ -27,8 +25,7 @@ const orderSchema = new mongoose.Schema({
 
 const Order = mongoose.model('Order', orderSchema);
 
-// WebSocket server
-const wss = new WebSocket.Server({ port: 8080 });
+const wss = new WebSocket.Server({ port: 8080, host: '0.0.0.0' });
 
 wss.on('connection', (ws) => {
   console.log('Client connected to WebSocket');
@@ -39,7 +36,6 @@ wss.on('connection', (ws) => {
     try {
       const orderData = JSON.parse(message);
 
-      // Validate orderData here if necessary
       const newOrder = new Order({
         fecha: new Date(orderData.fecha),
         numeroPedido: orderData.numeroPedido,
@@ -51,7 +47,6 @@ wss.on('connection', (ws) => {
       await newOrder.save();
       console.log('Order saved to database');
 
-      // Broadcast the new order to all connected clients
       wss.clients.forEach((client) => {
         if (client !== ws && client.readyState === WebSocket.OPEN) {
           client.send(JSON.stringify(newOrder));
@@ -59,7 +54,6 @@ wss.on('connection', (ws) => {
       });
     } catch (error) {
       console.error('Error processing order:', error);
-      // Optionally send an error message to the client
       ws.send(JSON.stringify({ error: 'Invalid order data or database error' }));
     }
   });
@@ -73,7 +67,6 @@ wss.on('connection', (ws) => {
   });
 });
 
-// API routes
 app.get('/api/orders', async (req, res) => {
   try {
     const orders = await Order.find().sort({ fecha: -1 });
