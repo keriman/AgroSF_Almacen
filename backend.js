@@ -9,7 +9,7 @@ const port = 3000;
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect('mongodb://192.168.127.132:27017/fertilizer_factory', {
+mongoose.connect('mongodb://localhost:27017/fertilizer_factory', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
@@ -25,13 +25,13 @@ const orderSchema = new mongoose.Schema({
 
 const Order = mongoose.model('Order', orderSchema);
 
-const wss = new WebSocket.Server({ port: 8080, host: '0.0.0.0' });
+const wss = new WebSocket.Server({ port: 8080, host: '127.0.0.1' });
 
 wss.on('connection', (ws) => {
   console.log('Client connected to WebSocket');
 
   ws.on('message', async (message) => {
-    console.log('Received:', message.toString());
+    //console.log('Received:', message.toString());
 
     try {
       const orderData = JSON.parse(message);

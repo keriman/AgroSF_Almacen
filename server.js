@@ -12,6 +12,6 @@ app.get('/production', (req, res) => {
     res.sendFile(path.join(__dirname, 'production.html'));
 });
 
-app.listen(8081, () => {
-    console.log('Static file server running on http://localhost:8081');
+app.listen(80, () => {
+    console.log('Static file server running on http://localhost');
 });

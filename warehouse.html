@@ -16,54 +16,78 @@
             color: blue;
             font-size: 1.5em;
         }
+        .custom-shadow {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4), 0 12px 24px rgba(0, 0, 0, 0.3) !important;
+        }
+        #currentDateTime {
+            text-align: center; /* Centra el texto si es necesario */
+        }
+        #currentDate {
+            font-size: 1em; /* Ajusta el tamaño de la fuente según tus necesidades */
+        }
+        #currentTime {
+            font-size: 1.5em; /* Ajusta el tamaño de la fuente según tus necesidades */
+            font-weight: bold; /* Pone la hora en negrita si deseas */
+            text-align: center;
+        }
+        .text-shadow {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
     </style>
 </head>
-<body>
+<body class="bg-dark">
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1050;">
+        <div class="bg-light text-dark p-2 rounded currentDateTime">
+            <div id="currentTime" class="text-shadow"></div>
+            <div id="currentDate" class="text-shadow"></div>
+        </div>
+    </div>
     <div class="container mt-5">
-        <h1 class="mb-4 d-flex justify-content-center">Almacen</h1>
-        
+        <h1 class="mb-4 d-flex justify-content-center text-white">Almacen</h1>
+
         <div class="card">
             <div class="card-header text-center">
-                <h5 class="card-title">Ordenes</h5>
+                <h3 class="card-title">Ordenes</h3>
             </div>
-            <div class="card-body">
-                <form id="orderForm" class="bg-white p-4 rounded shadow-sm">
+            <div class="card-body custom-shadow">
+                <form id="orderForm" class="bg-white p-4 rounded shadow-sm custom-shadow">
                     <div id="inputContainer">
-                        <div class="row align-items-end mb-3" id="row1">
-                            <div class="col-md-2 mb-3">
+                        <div class="row align-items-end mb-3" data-index="0">
+                            <div class="col-md-2">
                                 <label for="fecha1" class="form-label">Fecha:</label>
-                                <input type="date" id="fecha1" class="form-control" required>
+                                <input type="date" id="fecha1" class="form-control custom-shadow" required>
                             </div>
-                            <div class="col-md-2 mb-3">
+                            <div class="col-md-2">
                                 <label for="numeroPedido1" class="form-label">Número de Pedido:</label>
-                                <input type="text" id="numeroPedido1" class="form-control" required>
+                                <input type="text" id="numeroPedido1" class="form-control custom-shadow" required pattern="[A-Z0-9]+" title="Solo letras mayúsculas y números" oninput="this.value = this.value.toUpperCase()">
                             </div>
-                            <div class="col-md-3 mb-3">
+                            <div class="col-md-3">
                                 <label for="producto1" class="form-label">Producto:</label>
-                                <input type="text" id="producto1" class="form-control" required oninput="this.value = this.value.toUpperCase()">
+                                <input type="text" id="producto1" class="form-control custom-shadow" required oninput="this.value = this.value.toUpperCase()">
                             </div>
-                            <div class="col-md-2 mb-3">
+                            <div class="col-md-2">
                                 <label for="presentacion1" class="form-label">Presentación:</label>
-                                <input type="text" id="presentacion1" class="form-control" required>
+                                <input type="text" id="presentacion1" class="form-control custom-shadow" required oninput="this.value = this.value.toUpperCase()">
                             </div>
-                            <div class="col-md-2 mb-3">
+                            <div class="col-md-2">
                                 <label for="cantidad1" class="form-label">Cantidad:</label>
-                                <input type="number" id="cantidad1" class="form-control" required min="1">
+                                <input type="number" id="cantidad1" class="form-control custom-shadow" required min="1">
                             </div>
-                            <div class="col-md-1 mb-3 d-flex align-items-end">
-                                <button class="icon-button add-row-button">
-                                    <i class="fa-solid fa-plus"></i>
-                                </button>
+                            <div class="col-md-1">
+                                
                             </div>
                         </div>
                     </div>
                     <div class="d-flex justify-content-end">
-                        <input type="submit" class="btn btn-primary" id="enviarSocket" value="Enviar Orden">
+                        <button type="button" class="btn btn-primary add-row-button mx-2 text-shadow custom-shadow">Agregar Fila</button>
+                        <button type="submit" class="btn btn-primary text-shadow custom-shadow" id="enviarSocket">Enviar Orden</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+    
     
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -71,6 +95,14 @@
     <script src="assets/js/warehouse.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = ('0' + (today.getMonth() + 1)).slice(-2);
+            const day = ('0' + today.getDate()).slice(-2);
+            const todayFormatted = `${year}-${month}-${day}`;
+            document.getElementById('fecha1').setAttribute('min', todayFormatted);    
+
             const addButton = document.querySelector('.add-row-button');
             addButton.addEventListener('click', function() {
                 const inputContainer = document.getElementById('inputContainer');
@@ -82,27 +114,27 @@
                 newRow.innerHTML = `
                     <div class="col-md-2 mb-3">
                         <label for="fecha-${rowId}" class="form-label">Fecha:</label>
-                        <input type="date" id="fecha-${rowId}" class="form-control" required>
+                        <input type="date" id="fecha-${rowId}" class="form-control custom-shadow" required>
                     </div>
                     <div class="col-md-2 mb-3">
                         <label for="numeroPedido-${rowId}" class="form-label">Número de Pedido:</label>
-                        <input type="text" id="numeroPedido-${rowId}" class="form-control" required>
+                        <input type="text" id="numeroPedido-${rowId}" class="form-control custom-shadow" required oninput="this.value = this.value.toUpperCase()">
                     </div>
                     <div class="col-md-3 mb-3">
                         <label for="producto-${rowId}" class="form-label">Producto:</label>
-                        <input type="text" id="producto-${rowId}" class="form-control" required oninput="this.value = this.value.toUpperCase()">
+                        <input type="text" id="producto-${rowId}" class="form-control custom-shadow" required oninput="this.value = this.value.toUpperCase()">
                     </div>
                     <div class="col-md-2 mb-3">
                         <label for="presentacion-${rowId}" class="form-label">Presentación:</label>
-                        <input type="text" id="presentacion-${rowId}" class="form-control" required>
+                        <input type="text" id="presentacion-${rowId}" class="form-control custom-shadow" required oninput="this.value = this.value.toUpperCase()">
                     </div>
                     <div class="col-md-2 mb-3">
                         <label for="cantidad-${rowId}" class="form-label">Cantidad:</label>
-                        <input type="number" id="cantidad-${rowId}" class="form-control" required min="1">
+                        <input type="number" id="cantidad-${rowId}" class="form-control custom-shadow   " required min="1">
                     </div>
                     <div class="col-md-1 mb-3 d-flex align-items-end">
-                        <button type="button" class="icon-button remove-row-button" data-row-id="${rowId}">
-                            <i class="fa-solid fa-window-minimize"></i>
+                        <button type="button" class="icon-button " >
+                            <i class="fa-solid fa-window-minimize text-shadow remove-row-button" data-row-id="${rowId}"></i>
                         </button>
                     </div>
                 `;
@@ -110,16 +142,14 @@
             });
             document.getElementById('inputContainer').addEventListener('click', function(e) {
                 if (e.target && e.target.classList.contains('remove-row-button')) {
-                    const button = e.target.closest('.remove-row-button');
-                    if (button) {
-                        const rowId = button.getAttribute('data-row-id');
-                        const row = document.getElementById(`row-${rowId}`);
-                        if (row) {
-                            row.remove();
-                        }
+                    const rowId = e.target.getAttribute('data-row-id');
+                    const row = document.getElementById(`row-${rowId}`);
+                    if (row) {
+                        row.remove();
                     }
                 }
             });
+
             document.getElementById('orderForm').addEventListener('submit', (event) => {
                 event.preventDefault();
                 if (validateForm()) {
@@ -133,6 +163,27 @@
                 }
             });
         });
+        function updateDateTime() {
+            const now = new Date();
+            const optionsDate = { 
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            };
+            const optionsTime = { 
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            const formattedDate = now.toLocaleDateString('es-ES', optionsDate);
+            const formattedTime = now.toLocaleTimeString('es-ES', optionsTime);
+
+            document.getElementById('currentDate').innerText = formattedDate;
+            document.getElementById('currentTime').innerText = formattedTime;
+        }
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
     </script>
 </body>
 </html>

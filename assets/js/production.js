@@ -1,11 +1,6 @@
-const socket = new WebSocket('ws://192.168.127.132:8080');
+const socket = new WebSocket('ws://127.0.0.1:8080');
 
 document.addEventListener('DOMContentLoaded', () => {
-    socket.addEventListener('open', (event) => {
-        console.log('Connected to WebSocket server');
-        fetchOrderHistory(); 
-    });
-
     socket.addEventListener('message', (event) => {
         console.log('Received message:', event.data);
         try {
@@ -15,7 +10,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 title: 'Nueva Orden Recibida',
                 text: `Cantidad: ${order.cantidad}, Producto: ${order.producto}, Presentación: ${order.presentacion}`,
                 icon: 'info',
-                confirmButtonText: 'Aceptar'
+                confirmButtonText: 'Aceptar',
+                timer: 3000,
+                timerProgressBar: true
             });
             playAlertSound();
             showNotification('Nueva Orden', `Cantidad: ${order.cantidad}, Producto: ${order.producto}`);
@@ -30,59 +27,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-function fetchOrderHistory() {
-    fetch('http://192.168.127.132:3000/api/orders')
-        .then(response => response.json())
-        .then(orders => {
-            initializeTable();
-            orders.forEach(order => addOrderToHistory(order));
-        })
-        .catch(error => console.error('Error fetching order history:', error));
-}
-
-function initializeTable() {
-    if (!historyDataTable) {
-        historyDataTable = $('#ordersHistoryTable').DataTable({
-            language: {
-                url: 'assets/json/Spanish.json'
-            },
-            dom: 'Blfrtip',
-            pageLength: 25,
-            buttons: [
-                {
-                    extend: 'excelHtml5',
-                    text: '<i class="fa fa-file-excel"></i> Excel',
-                    titleAttr: 'Excel',
-                    className: 'buttons-excel'
-                },
-                {
-                    extend: 'pdfHtml5',
-                    text: '<i class="fa fa-file-pdf"></i> PDF',
-                    titleAttr: 'PDF',
-                    className: 'buttons-pdf'
-                }
-            ],
-            order: [[0, 'desc']],
-            columns: [
-                { 
-                    title: 'Fecha',
-                    data: 'fecha',
-                    render: function(data) {
-                        return new Date(data).toLocaleString('es-ES');
-                    }
-                },
-                { title: 'Pedido', data: 'numeroPedido' },
-                { title: 'Producto', data: 'producto' },
-                { title: 'Presentación', data: 'presentacion' },
-                { title: 'Cantidad', data: 'cantidad' }
-            ],
-        });
-    }
-}
-
 
 function fetchOrderHistory() {
-    fetch('http://192.168.127.132:3000/api/orders')
+    fetch('http://127.0.0.1:3000/api/orders')
         .then(response => response.json())
         .then(orders => {
             ordersHistory = [];
@@ -107,7 +54,7 @@ function addOrderToHistory(order) {
         if (!table) {
             table = document.createElement('table');
             table.id = 'ordersHistoryTable';
-            table.className = 'table table-striped table-bordered';
+            table.className = 'table table-striped table-hover table-bordered';
             table.innerHTML = `
                 <thead class="thead-dark">
                     <tr>
@@ -128,7 +75,7 @@ function addOrderToHistory(order) {
             language: {
                 url: 'assets/json/Spanish.json'
             },
-            dom: 'Blfrtip',
+            dom:  '<"top"f>rt<"bottom"Blip><"clear">',
             pageLength: 25,
             buttons: [
                 {
@@ -156,15 +103,23 @@ function addOrderToHistory(order) {
     }
 
     const formattedDate = moment.utc(order.fecha).format('YYYY-MM-DD');
-    
-    historyDataTable.row.add([
+    const currentDate = moment().format('YYYY-MM-DD'); // Obtener la fecha actual
+
+    // Agregar la fila
+    const rowNode = historyDataTable.row.add([
         formattedDate,
-        order.numeroPedido,
-        order.producto,
+        order.numeroPedido ? order.numeroPedido.toUpperCase() : '',
+        order.producto ? order.producto.toUpperCase() : '',
         order.presentacion,
         order.cantidad
-    ]).draw();
+    ]).draw().node();
+
+    // Comprobar si la fecha es menor a la fecha actual
+    if (moment(formattedDate).isBefore(currentDate)) {
+        $(rowNode).addClass('highlight-red'); // Aplicar la clase CSS si la fecha es menor
+    }
 }
+
 
 
 function playAlertSound() {
