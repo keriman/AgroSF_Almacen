@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
             confirmButtonText: 'Aceptar'
         });
     });
-
     document.getElementById('inputContainer').addEventListener('click', function(e) {
         if (e.target && e.target.classList.contains('remove-row-button')) {
             const button = e.target.closest('.remove-row-button');
@@ -31,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-
 });
 
 async function validateForm() {
@@ -54,7 +52,6 @@ async function validateForm() {
     if (!isValid) {
         Swal.fire('Error', 'Todos los campos son obligatorios en todas las filas.', 'error');
     }
-
     return isValid;
 }
 

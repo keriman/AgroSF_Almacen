@@ -16,12 +16,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             playAlertSound();
             showNotification('Nueva Orden', `Cantidad: ${order.cantidad}, Producto: ${order.producto}`);
-
         } catch (error) {
             console.error('Error parsing JSON:', error);
         }
     });
-
     if ("Notification" in window && Notification.permission !== "granted") {
         Notification.requestPermission();
     }
@@ -48,7 +46,6 @@ let ordersHistory = [];
 let historyDataTable = null;
 
 function addOrderToHistory(order) {
-    ordersHistory.push(order);
     if (!historyDataTable) {
         let table = document.getElementById('ordersHistoryTable');
         if (!table) {
@@ -70,7 +67,7 @@ function addOrderToHistory(order) {
             `;
             document.getElementById('orderHistoryDisplay').appendChild(table);
         }
-        
+
         historyDataTable = $('#ordersHistoryTable').DataTable({
             language: {
                 url: 'assets/json/Spanish.json'
@@ -103,24 +100,39 @@ function addOrderToHistory(order) {
     }
 
     const formattedDate = moment.utc(order.fecha).format('YYYY-MM-DD');
-    const currentDate = moment().format('YYYY-MM-DD'); // Obtener la fecha actual
-
-    // Agregar la fila
+    const currentDate = moment().format('YYYY-MM-DD'); 
+    const nextDay = moment().add(1, 'days').format('YYYY-MM-DD'); 
+   
     const rowNode = historyDataTable.row.add([
         formattedDate,
         order.numeroPedido ? order.numeroPedido.toUpperCase() : '',
         order.producto ? order.producto.toUpperCase() : '',
         order.presentacion,
         order.cantidad
-    ]).draw().node();
+    ]).draw().node(); 
 
-    // Comprobar si la fecha es menor a la fecha actual
+    $('#ordersHistoryTable tbody tr').removeClass('highlight-orange highlight-red');
+    
+    let count = 0;
+    $('#ordersHistoryTable tbody tr').each(function(index) {
+        const dateCellText = $(this).find('td').eq(0).text().trim();
+        const isCurrentOrFuture = moment(dateCellText).isSameOrAfter(nextDay) || moment(dateCellText).isSame(currentDate, 'day');
+
+        if (isCurrentOrFuture && count < 3) {
+            $(this).find('td').addClass('highlight-orange');
+            count++;
+        } else {
+            $(this).find('td').removeClass('highlight-orange');
+        }        
+        if (moment(dateCellText).isBefore(currentDate)) {
+            $(this).addClass('highlight-red');
+        }
+    });
+    
     if (moment(formattedDate).isBefore(currentDate)) {
-        $(rowNode).addClass('highlight-red'); // Aplicar la clase CSS si la fecha es menor
+        $(rowNode).addClass('highlight-red');
     }
 }
-
-
 
 function playAlertSound() {
     const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-alert-bells-echo-765.mp3');

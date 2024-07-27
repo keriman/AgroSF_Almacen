@@ -20,28 +20,67 @@
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4), 0 12px 24px rgba(0, 0, 0, 0.3) !important;
         }
         #currentDateTime {
-            text-align: center; /* Centra el texto si es necesario */
+            text-align: center; 
         }
         #currentDate {
-            font-size: 1em; /* Ajusta el tamaño de la fuente según tus necesidades */
+            font-size: 1em;
         }
         #currentTime {
-            font-size: 1.5em; /* Ajusta el tamaño de la fuente según tus necesidades */
-            font-weight: bold; /* Pone la hora en negrita si deseas */
+            font-size: 1.5em; 
+            font-weight: bold; 
             text-align: center;
         }
         .text-shadow {
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
-
+        .sticky-note {
+            width: 200px;
+            height: 140px;
+            background: #fdfd86;
+            padding: 20px;
+            font-family: 'Comic Sans MS', cursive;
+            font-size: 16px;
+            color: #333;
+            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.7);
+            transform: rotate(-5deg);
+            position: relative;
+        }   
+        .sticky-note::before {
+            content: '';
+            width: 20px;
+            height: 20px;
+            background: rgb(223, 4, 4);
+            position: absolute;
+            top: 2px;
+            left: 50%;
+            transform: translateX(-50%) rotate(45deg);
+            z-index: -1;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+        .sticky-note::after {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: red;
+            position: absolute;
+            top: 9px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: -1;
+            border-radius: 50%;
+            box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+        }
     </style>
 </head>
 <body class="bg-dark">
     <div class="position-fixed top-0 end-0 p-3" style="z-index: 1050;">
-        <div class="bg-light text-dark p-2 rounded currentDateTime">
-            <div id="currentTime" class="text-shadow"></div>
-            <div id="currentDate" class="text-shadow"></div>
-        </div>
+        <div class="sticky-note">
+            <div class="text-dark p-2 rounded currentDateTime">
+               <div id="currentTime" class="text-shadow"></div>
+               <div id="currentDate" class="text-shadow text-center"></div>
+            </div>
+         </div>         
     </div>
     <div class="container mt-5">
         <h1 class="mb-4 d-flex justify-content-center text-white">Almacen</h1>
@@ -95,7 +134,6 @@
     <script src="assets/js/warehouse.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-
             const today = new Date();
             const year = today.getFullYear();
             const month = ('0' + (today.getMonth() + 1)).slice(-2);
@@ -110,7 +148,6 @@
                 const newRow = document.createElement('div');
                 newRow.className = 'row align-items-end mb-3';
                 newRow.id = `row-${rowId}`;
-
                 newRow.innerHTML = `
                     <div class="col-md-2 mb-3">
                         <label for="fecha-${rowId}" class="form-label">Fecha:</label>
@@ -149,7 +186,6 @@
                     }
                 }
             });
-
             document.getElementById('orderForm').addEventListener('submit', (event) => {
                 event.preventDefault();
                 if (validateForm()) {

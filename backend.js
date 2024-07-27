@@ -2,7 +2,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const WebSocket = require('ws');
-
 const app = express();
 const port = 3000;
 
@@ -32,7 +31,6 @@ wss.on('connection', (ws) => {
 
   ws.on('message', async (message) => {
     //console.log('Received:', message.toString());
-
     try {
       const orderData = JSON.parse(message);
 
@@ -43,10 +41,8 @@ wss.on('connection', (ws) => {
         presentacion: orderData.presentacion,
         cantidad: orderData.cantidad
       });
-      
       await newOrder.save();
       console.log('Order saved to database');
-
       wss.clients.forEach((client) => {
         if (client !== ws && client.readyState === WebSocket.OPEN) {
           client.send(JSON.stringify(newOrder));
